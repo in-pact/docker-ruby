@@ -41,6 +41,6 @@ RUN gem install bundler --version "$BUNDLER_VERSION" \
 ENV BUNDLE_APP_CONFIG $GEM_HOME
 
 # install QT
-RUN apt-get install -y --force-yes qt5-default libqt5webkit5-dev
+RUN apt-get update && apt-get install -y --force-yes qt5-default libqt5webkit5-dev
 
 CMD [ "irb" ]
