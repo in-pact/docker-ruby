@@ -5,11 +5,8 @@ ENV RUBY_VERSION 2.4.1
 ENV RUBY_DOWNLOAD_SHA256 a330e10d5cb5e53b3a0078326c5731888bb55e32c4abfeb27d9e7f8e5d000250
 ENV RUBYGEMS_VERSION 2.6.12
 
-# skip installing gem documentation
 RUN echo 'install: --no-document\nupdate: --no-document' >> "$HOME/.gemrc"
 
-# some of ruby's build scripts are written in ruby
-# we purge this later to make sure our final image uses what we just built
 RUN apt-get update \
 	&& apt-get install -y bison libgdbm-dev ruby \
 	&& rm -rf /var/lib/apt/lists/* \
@@ -27,7 +24,6 @@ RUN apt-get update \
 	&& gem update --system $RUBYGEMS_VERSION \
 	&& rm -r /usr/src/ruby
 
-# install things globally, for great justice
 ENV GEM_HOME /usr/local/bundle
 ENV PATH $GEM_HOME/bin:$PATH
 
@@ -37,10 +33,21 @@ RUN gem install bundler --version "$BUNDLER_VERSION" \
 	&& bundle config --global path "$GEM_HOME" \
 	&& bundle config --global bin "$GEM_HOME/bin"
 
-# don't create ".bundle" in all our apps
 ENV BUNDLE_APP_CONFIG $GEM_HOME
 
-# install QT
-RUN apt-get update && apt-get install -y --force-yes qt5-default libqt5webkit5-dev
+RUN apt-get update \
+	&& apt-get install --force-yes -y --no-install-recommends \
+	   autoconf automake bzip2 file g++ gcc libbz2-dev libc6-dev libcurl4-openssl-dev libevent-dev libffi-dev \
+	   libgeoip-dev libglib2.0-dev libjpeg-dev liblzma-dev libmagickcore-dev libmagickwand-dev libmysqlclient-dev \
+	   libncurses-dev libpng-dev libpq-dev libreadline-dev libsqlite3-dev libssl-dev libtool libwebp-dev libxml2-dev \
+	   libxslt-dev libyaml-dev make patch xz-utils zlib1g-dev ca-certificates curl wget \
+	   bzr git mercurial openssh-client subversion procps \
+
+	&& rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update \
+	&& apt-get install --force-yes -y \
+		 qt5-default libqt5webkit5-dev xvfb xauth imagemagick \
+	&& rm -rf /var/lib/apt/lists/*
 
 CMD [ "irb" ]
